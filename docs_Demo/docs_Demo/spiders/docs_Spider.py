@@ -6,7 +6,8 @@ from scrapy.spiders import CrawlSpider, Rule
 from tempfile import NamedTemporaryFile
 control_chars = ''.join(map(chr, chain(range(0, 9), range(11, 32), range(127, 160))))
 CONTROL_CHAR_RE = re.compile('[%s]' % re.escape(control_chars))
-TEXTRACT_EXTENSIONS = [".pdf", ".doc", ".docx", ""]
+#TEXTRACT_EXTENSIONS = [".pdf", ".doc", ".docx", ""]
+TEXTRACT_EXTENSIONS = [".pdf"]
 class CustomLinkExtractor(LinkExtractor):
     def __init__(self, *args, **kwargs):
         super(CustomLinkExtractor, self).__init__(*args, **kwargs)
@@ -14,13 +15,22 @@ class CustomLinkExtractor(LinkExtractor):
         self.deny_extensions = [ext for ext in self.deny_extensions if ext not in TEXTRACT_EXTENSIONS]
 
 class docs_Spider(CrawlSpider):
-    name = "itsy_bitsy"
+    name = "docs_Spider"
     start_urls = [
-        'https://www.imagescape.com/media/uploads/zinnia/2018/08/20/scrape_me.html'
+        'https://sites.google.com/site/genomicaciencias/lecturas'
     ]
+    # 'https://www.imagescape.com/media/uploads/zinnia/2018/08/20/scrape_me.html'
+    # 'https://sites.google.com/site/genomicaciencias/lecturas'
     def __init__(self, *args, **kwargs):
         self.rules = (Rule(CustomLinkExtractor(), follow=True, callback="parse_item"),)
         super(docs_Spider, self).__init__(*args, **kwargs)
+
+    def save_pdf(self, response):
+        """ Save pdf files """
+        path = response.url.split('/')[-1]
+        self.logger.info('Saving PDF %s', path);
+        with open(path, 'wb') as file:
+            file.write(response.body);
 
     def parse_item(self, response):
         if hasattr(response, "text"):
@@ -32,17 +42,18 @@ class docs_Spider(CrawlSpider):
             # One-liner for testing if "response.url" ends with any of TEXTRACT_EXTENSIONS
             extension = list(filter(lambda x: response.url.lower().endswith(x), TEXTRACT_EXTENSIONS))[0]
             if extension:
+                self.save_pdf(response)
                 # This is a pdf or something else that Textract can process
                 # Create a temporary file with the correct extension.
-                tempfile = NamedTemporaryFile(suffix=extension)
-                tempfile.write(response.body)
-                tempfile.flush()
-                extracted_data = textract.process(tempfile.name)
-                extracted_data = extracted_data.decode('utf-8')
-                extracted_data = CONTROL_CHAR_RE.sub('', extracted_data)
-                tempfile.close()
-                with open("scraped_content.txt", "a") as f:
+        #        tempfile = NamedTemporaryFile(suffix=extension)
+        #        tempfile.write(response.body)
+        #        tempfile.flush()
+        #        extracted_data = textract.process(tempfile.name)
+        #        extracted_data = extracted_data.decode('utf-8')
+        #        extracted_data = CONTROL_CHAR_RE.sub('', extracted_data)
+        #        tempfile.close()
+                with open("scraped_contentReport.txt", "a") as f:
                     f.write(response.url.upper())
                     f.write("\n")
-                    f.write(extracted_data)
+                    #f.write(extracted_data)
                     f.write("\n\n")
