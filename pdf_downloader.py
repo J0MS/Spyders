@@ -1,13 +1,25 @@
 import scrapy
 
 from scrapy.http import Request
+#import urllib
+#urllib.urlretrieve("http://...","file_name.pdf")
 
-class PdfDownloader(scrapy.Spider):
+#response.css('a::attr(href)').extract()
+
+class pdfDownloader(scrapy.Spider):
 	name = 'pdf_downloader'
 	# domain URL
-	allowed_domains = ['example.com']
+	allowed_domains = ['https://www.imagescape.com/media/uploads/zinnia/2018/08/20/scrape_me.html']
 	# links to the specific pages
-	start_urls = ['https://sites.google.com/site/genomicaciencias/lecturas']
+	#url = input('Enter a URL:')
+	url = 'https://www.imagescape.com/media/uploads/zinnia/2018/08/20/scrape_me.html'
+	start_urls = []
+	start_urls.append(url)
+	print(start_urls)
+
+	def start_requests(self):
+		for url in self.start_urls:
+			yield Request(url, self.parse)
 
 
 	def parse(self, response):
@@ -26,3 +38,9 @@ class PdfDownloader(scrapy.Spider):
 		self.logger.info('Saving PDF %s', path);
 		with open(path, 'wb') as file:
 			file.write(response.body);
+
+
+if __name__ == '__main__':
+    pdfDownloader = pdfDownloader()
+    pdfDownloader.start_requests()
+    pdfDownloader.parse()
