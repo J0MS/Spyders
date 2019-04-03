@@ -13,12 +13,49 @@ class CustomLinkExtractor(LinkExtractor):
         super(CustomLinkExtractor, self).__init__(*args, **kwargs)
         # Keep the default values in "deny_extensions" *except* for those types we want.
         self.deny_extensions = [ext for ext in self.deny_extensions if ext not in TEXTRACT_EXTENSIONS]
-
+        self.allow = ([r'https://sites.google.com/site/genomicaciencias/lecturas\w+'])
+        self.allowed_domains = ['sites.google.com/site/genomicaciencias/lecturas']
+#        self.allow = (r'https://sites.google.com/site/genomicaciencias/lecturas'),
+#        self.deny = (r'other url patterns to deny'),
 class docs_Spider(CrawlSpider):
     name = "docs_Spider"
     start_urls = [
         'https://sites.google.com/site/genomicaciencias/lecturas'
     ]
+    rules = (
+        Rule(LinkExtractor(
+            allow=[r'https://sites.google.com/site/genomicaciencias/lecturas/\w+'],
+            restrict_xpaths=(['.//table[@class="filecabinet-table"]/tr[1]',
+                              './/table[@class="filecabinet-table"]/tr[2]',
+                              './/table[@class="filecabinet-table"]/tr[3]',
+                              './/table[@class="filecabinet-table"]/tr[5]',
+                              './/table[@class="filecabinet-table"]/tr[6]',
+                              './/table[@class="filecabinet-table"]/tr[7]',
+                              './/table[@class="filecabinet-table"]/tr[8]',
+                              './/table[@class="filecabinet-table"]/tr[9]',
+                              './/table[@class="filecabinet-table"]/tr[10]',
+                              './/table[@class="filecabinet-table"]/tr[11]',
+                              './/table[@class="filecabinet-table"]/tr[12]',
+                              './/table[@class="filecabinet-table"]/tr[13]',
+                              './/table[@class="filecabinet-table"]/tr[14]',
+                              './/table[@class="filecabinet-table"]/tr[15]',
+                              './/table[@class="filecabinet-table"]/tr[16]',
+                              './/table[@class="filecabinet-table"]/tr[17]',
+                              './/table[@class="filecabinet-table"]/tr[18]',
+                              './/table[@class="filecabinet-table"]/tr[19]',
+                              './/table[@class="filecabinet-table"]/tr[20]',
+                              './/table[@class="filecabinet-table"]/tr[21]',
+                              './/table[@class="filecabinet-table"]/tr[22]',
+                              './/table[@class="filecabinet-table"]/tr[23]',
+                              './/table[@class="filecabinet-table"]/tr[24]',
+                              './/table[@class="filecabinet-table"]/tr[25]'])
+
+
+            ),# follow=True
+
+            ),
+    #    Rule(LinkExtractor(allow=[r'threads/\w+']), callback='parse_item'),
+    )
     # 'https://www.imagescape.com/media/uploads/zinnia/2018/08/20/scrape_me.html'
     # 'https://sites.google.com/site/genomicaciencias/lecturas'
     def __init__(self, *args, **kwargs):
@@ -33,6 +70,7 @@ class docs_Spider(CrawlSpider):
             file.write(response.body);
 
     def parse_item(self, response):
+        self.logger.info('response.url=%s' % response.url)
         if hasattr(response, "text"):
             # The response is text - we assume html. Normally we'd do something
             # with this, but this demo is just about binary content, so...
